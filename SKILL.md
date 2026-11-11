@@ -12,8 +12,9 @@ Takes any description of work — however rough — and turns it into a complete
 3. Reading the project's GitHub code for context
 4. Pulling in relevant team standards (Snowflake, DBT, Python, Lightspeed)
 5. Drafting a card with stakeholder info, description, and tight acceptance criteria
-6. Getting your approval before touching Jira
-7. Creating the card + all subtasks in one go
+6. Listing the process subtasks as a checklist on the card itself
+7. Getting your approval before touching Jira
+8. Creating the card — one Story, with no separate subtask issues
 
 ---
 
@@ -109,10 +110,16 @@ Generate the card using this exact structure:
 [3–4 sentences, plain text. What does this project do, and what specifically needs to be implemented in this card? Be direct — no filler words. Ground this in what the user described plus what you found in the code and Confluence docs.]
 
 **Acceptance Criteria:**
-AC1: [One verifiable outcome. One sentence. Use "is", "returns", "validates" — not "should" or "may". Compact and direct.]
-AC2: [Same format]
-AC3: [Same format]
-[Add more ACs as scope warrants — each AC maps to one subtask later]
+- [ ] AC1: [One verifiable outcome. One sentence. Use "is", "returns", "validates" — not "should" or "may". Compact and direct.]
+- [ ] AC2: [Same format]
+- [ ] AC3: [Same format]
+[Add more ACs as scope warrants]
+
+**Subtasks:**
+- [ ] Point this card
+- [ ] Dev review
+- [ ] PO review
+- [ ] Post prod validation
 
 **Notes:**
 [Leave blank — user fills in]
@@ -120,15 +127,21 @@ AC3: [Same format]
 **Documentation URL:** [Confluence page URL]
 ```
 
+**Checklists:** Both the Acceptance Criteria and the Subtasks sections are checklists (one unchecked box per item). In the draft shown to the user, write them as `- [ ]` items. In Jira they must be real checkboxes — see Step 9 for the required format.
+
+**Subtasks section:** A checklist in the card description — the only place subtasks exist. **Never create subtask issues (or any separate cards) for these items.** Default items: `Point this card`, `Dev review`, `PO review`, `Post prod validation` (migration cards add the validation item from Migration Step 6). If the user edits the list, update the section; if they want no subtasks, remove the section entirely.
+
 **Writing good ACs:**
 The goal is that any developer reading AC1 knows exactly what done looks like. Each AC should name a concrete, testable outcome. Reference team standards where relevant (e.g., "follows DBT staging model naming conventions per the DE standards doc"). Derive ACs only from what the user explicitly asked for — do not add ACs for things that are implied, adjacent, or "nice to check while you're at it."
 
 **Common AC mistakes to avoid:**
 - **Redundant ACs**: Don't add an AC that is just a restatement of another one or an obvious consequence of it.
 - **Stretch ACs**: Don't invent scope that wasn't requested.
-- **Process ACs**: Subtasks like "dev review" and "PO review" exist as subtasks — they are not ACs. Don't duplicate them as acceptance criteria.
+- **Process ACs**: Steps like "dev review" and "PO review" belong in the Subtasks checklist, not the ACs. Don't duplicate them as acceptance criteria — even if the user removes them from the checklist.
 
 When in doubt, ask yourself: "Did the user ask for this, or am I adding it on my own?" If you added it on your own, cut it.
+
+**ACs stay on the card.** ACs live only in the card's Acceptance Criteria section. Never turn ACs into subtasks, checklist items, or separate cards, and never propose an `Implement [AC]` item per AC.
 
 If stakeholder info wasn't mentioned anywhere, put "TBD" — don't invent it.
 
@@ -136,11 +149,11 @@ If stakeholder info wasn't mentioned anywhere, put "TBD" — don't invent it.
 
 ## Step 7 — Show the user the draft
 
-Send the full card text (formatted exactly as in Step 6) and say:
+Send the full card text (formatted exactly as in Step 6), including the **Subtasks** checklist. Then say:
 
-> "Here's the draft — does this look right? Let me know if you'd like to adjust anything: the description, ACs, stakeholder info, notes, or anything else. Once you're happy with it, I'll create it in Jira."
+> "Here's the draft — does this look right? Let me know if you'd like to adjust anything: the description, ACs, stakeholder info, the Subtasks checklist, notes, or anything else. Once you're happy with it, I'll create it in Jira."
 
-Make any changes the user requests. Keep iterating until they explicitly say it's good.
+Make any changes the user requests and keep iterating until the user explicitly approves the card. The Subtasks checklist is part of the card, so approving the card approves it — no separate subtask approval is needed, because no subtask issues are created.
 
 ---
 
@@ -162,31 +175,40 @@ Use the Atlassian MCP to create the issue:
 | Project | `LS` (Lightspeed) or `DENMFS` (DE Feature Squad) |
 | Issue type | Story |
 | Summary | A concise title derived from the description (not the full description text) |
-| Description | Full card content, formatted for Jira |
+| Description | Full card content as approved, in HTML (see below) |
 
 If the user chose the current sprint, move the newly created issue into the active sprint after creation using the sprint transition.
 
+**Description format — required for the checklists:** Pass the description with `contentFormat: "html"`. Markdown `- [ ]` items do not become checkboxes in Jira; they're stored as literal "[ ]" text. Write each checklist (Acceptance Criteria and Subtasks) as a Jira task list:
+
+```html
+<p><strong>Acceptance Criteria:</strong></p>
+<ul data-type="task-list">
+  <li data-type="task-item"><input type="checkbox"> AC1: ...</li>
+  <li data-type="task-item"><input type="checkbox"> AC2: ...</li>
+</ul>
+<p><strong>Subtasks:</strong></p>
+<ul data-type="task-list">
+  <li data-type="task-item"><input type="checkbox"> Point this card</li>
+  <li data-type="task-item"><input type="checkbox"> Dev review</li>
+</ul>
+```
+
+Use `<p>`, `<strong>`, `<br>`, `<code>` and `<a href>` for the rest of the card. After creating the card, check that the description reads back with `- [ ]` items (unescaped). If it shows `\[ \]`, the checklists didn't convert — rewrite the description in the HTML format above with `editJiraIssue` and `contentFormat: "html"`.
+
 ---
 
-## Step 10 — Create subtasks
+## Step 10 — No subtask issues
 
-Create subtasks under the card in this order:
-
-1. **One subtask per AC** — title: `Implement [brief AC summary]`
-2. `Point this card`
-3. `Dev review`
-4. `PO review`
-5. `Post prod validation`
-
-So if there are 3 ACs, the card will have 7 subtasks total (3 AC subtasks + 4 process subtasks).
+Do **not** create subtask issues (`Task`/`Sub-task` with a parent) or any other separate cards for the subtasks or ACs. The card's Subtasks checklist is the complete record of them. Only create a separate issue if the user explicitly asks for that specific issue in the current request.
 
 ---
 
 ## Finish
 
-Once everything is created, confirm to the user with a link to the Jira card. Something like:
+Once the card is created, confirm to the user with a link to the Jira card. Something like:
 
-> "Done! The card is live: [Jira issue link]. It has [N] subtasks including one for each AC plus the review and validation steps."
+> "Done! The card is live: [Jira issue link]. The ACs and Subtasks are checklists on the card."
 
 ---
 
@@ -241,11 +263,11 @@ Each description should make clear:
 **Migration-specific guidance for ACs:**
 Keep ACs scoped to what this card's migration step actually delivers. Do not add ACs that belong to adjacent cards.
 
-Show all drafted cards to the user at once, numbered, and ask:
+Show all drafted cards to the user at once, numbered. Each card includes its **Subtasks** checklist (the default set from Migration Step 6). Then ask:
 
-> "Here are the [N] migration cards I drafted from the Miro board. Do any of these need adjustments before I create them?"
+> "Here are the [N] migration cards I drafted from the Miro board. Do any of them — including their Subtasks checklists — need adjustments before I create them?"
 
-Iterate until the user approves all drafts.
+Iterate until the user approves all drafts. The Subtasks checklist is part of each card; no subtask issues are created.
 
 ---
 
@@ -257,25 +279,29 @@ After the user approves the migration card drafts, ask:
 
 If they say **yes**:
 - Draft the swap-over card with ACs covering: deactivation of legacy SSIS, activation of new pipeline, alerting configured, logging verified, end-to-end data flow confirmed, rollback plan noted.
+- Show it with its Subtasks checklist (Migration Step 6) and get explicit approval, as in Migration Step 4.
 - Add this card as the last card in the set.
 
 If they say **no**, skip it.
 
 ---
 
-## Migration Step 6 — Data validation subtask (mandatory for every migration card)
+## Migration Step 6 — Subtasks checklist for migration cards
 
-Every migration card — including the swap-over card if created — gets one additional subtask beyond the standard set:
+Every migration card — including the swap-over card if created — gets one additional item in its Subtasks checklist beyond the standard set:
 
 > `Validate data output and run comparisons against legacy system for this step`
 
-**Full subtask order for every migration card:**
-1. One subtask per AC — title: `Implement [brief AC summary]`
-2. `Validate data output and run comparisons against legacy system for this step`
-3. `Point this card`
-4. `Dev review`
-5. `PO review`
-6. `Post prod validation`
+Drop this item on cards where it doesn't fit (e.g., a decommission card). The user's approved checklist is final.
+
+**Default Subtasks checklist for every migration card:**
+1. `Validate data output and run comparisons against legacy system for this step`
+2. `Point this card`
+3. `Dev review`
+4. `PO review`
+5. `Post prod validation`
+
+As on the regular path, these exist only as a checklist in the card description — never as subtask issues — and the description is created in HTML per Step 9 so both checklists render as real checkboxes.
 
 ---
 
@@ -287,12 +313,12 @@ Ask once for the whole set:
 
 ---
 
-## Migration Step 8 — Create all cards and subtasks
+## Migration Step 8 — Create all cards
 
 Create each migration card in Jira one by one (Stories), in order from first to last (swap-over card last if present). For each card:
-- Create the Story, passing the epic key extracted in Migration Step 1 via `additional_fields: {"customfield_10014": "<epic key>"}`. Every migration card must be linked to the same epic as the discovery card.
-- For the LS project, use issue type `Task` for subtasks (not `Sub-task`) — the LS project does not support the Sub-task issue type.
+- Create the Story with the epic as its parent (`parent: "<epic key>"`). Every migration card must be linked to the same epic as the discovery card.
 - Move to sprint if the user chose current sprint.
-- Create all subtasks in the order defined in Migration Step 6.
+- Do **not** create subtask issues — the Subtasks checklist in the description covers them.
+- If the user stops or interrupts creation, stop immediately, check what was actually created, and report it.
 
-After all cards are created, confirm with links to each.
+After all cards are created, confirm with a link to each.
